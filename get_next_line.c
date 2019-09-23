@@ -6,7 +6,7 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/23 19:01:20 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/23 19:07:24 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,15 +14,17 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <libft.h>
 
 int	get_next_line(const int fd, char **line)
 {
-	size_t  buff_bytes;
-	size_t  seek;
+	size_t buff_bytes;
+	size_t seek;
 	char buff[BUFF_SIZE];
+	static char *tmp_line;
+	char *tmp;
 
-	*line = NULL;
-	if (buff == 0)
+	if (tmp_line == 0)
 	{
 		while (buff_bytes = read(fd, buff, BUFF_SIZE))
 		{
@@ -30,22 +32,12 @@ int	get_next_line(const int fd, char **line)
 			seek = 0;
 			while (seek < buff_bytes || buff[seek] != '\n')
 				seek++;
-			if (seek < buff_bytes)
-
-					break;
-			}
-			else
-			{
-				while (buf[seek] != '\n')
-				{
-					write(1, &(buf[i]), 1);
-					seek++;
-				}
-				write(1, "\n", 1);
-			}
-
-
-
-
+			tmp = (char *) malloc(sizeof(char) * (seek + 1));
+			ft_strncpy(tmp, buff, seek + 1);
+			tmp[seek - 1] = '\n';
+			tmp[seek] = '\0';
 		}
-
+		*line = tmp;
+	}
+	return (1);
+}
