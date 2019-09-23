@@ -6,7 +6,7 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/23 19:07:24 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/23 19:25:40 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ int	get_next_line(const int fd, char **line)
 
 	if (tmp_line == 0)
 	{
-		while (buff_bytes = read(fd, buff, BUFF_SIZE))
+		while ((buff_bytes = read(fd, buff, BUFF_SIZE)))
 		{
 			buff[buff_bytes] = '\0';
 			seek = 0;
