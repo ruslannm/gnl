@@ -6,7 +6,7 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/23 19:25:40 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/24 17:16:00 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <libft.h>
+
+# define MAX_INT 2147483647
 
 int	get_next_line(const int fd, char **line)
 {
@@ -40,4 +42,62 @@ int	get_next_line(const int fd, char **line)
 		*line = tmp;
 	}
 	return (1);
+}
+
+void	ft_stop_read(int *size, int buff_size)
+{
+	if (MAX_INT - buff_size < *size)
+		*size = -1;
+}
+
+char	*ft_get_buff(int fd, int buff_size)
+{
+	char	buff[buff_size + 1];
+	static char	*str;
+	char	*temp;
+	int		size;
+	size_t seek;
+	size_t buff_bytes;
+
+	size = 0;
+	if (str == NULL)
+		str = (char*)malloc(sizeof(char) * (size + 1));
+	temp = (char*)malloc(sizeof(char) * (size + 1));
+	str[0] = 0;
+	temp[0] = 0;
+	while ((buff_bytes = read(fd, buff, buff_size)) && str && temp && size >= 0)
+	{
+		size += buff_bytes;
+		ft_strcpy(temp, str);
+		free(str);
+		str = (char*)malloc(sizeof(char) * (size + 1));
+		ft_strcpy(str, temp);
+		ft_strlcat(str, buff, size);
+		str[size] = '\0';
+		free(temp);
+		temp = (char*)malloc(sizeof(char) * (size + 1));
+		ft_stop_read(&size, buff_bytes);
+		seek = size - buff_bytes;
+		while (seek < buff_bytes && buff[seek] != '\n')
+			seek++;
+		if (buff[seek] == '\n')
+			size = -1;
+	}
+	free(temp);
+	temp = (char*)malloc(sizeof(char) * (seek + 1));
+	ft_strncpy(temp, str, seek + 1);
+//	ft_strsub(str,seek + 1, )
+
+	return (temp);
+}
+
+void	ft_read(int fd)
+{
+	char	*str;
+
+	str = ft_get_buff(fd, BUFF_SIZE);
+	if (str)
+		ft_putstr(str);
+	if (fd > 1)
+		close(fd);
 }
