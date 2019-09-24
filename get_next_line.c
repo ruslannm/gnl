@@ -6,7 +6,7 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/24 18:49:49 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/24 19:50:18 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,11 +83,12 @@ char	*ft_get_buff(int fd, int buff_size)
 	{
 		size += buff_bytes;
 		ft_strcpy(temp, str);
-		free(str);
+		if (str[0] != 0)
+			free(str);
 		str = (char*)malloc(sizeof(char) * (size + 1));
 		ft_strcpy(str, temp);
 		ft_strlcat(str, buff, size +1);
-		str[size] = '\0';
+//		str[size] = '\0';
 		free(temp);
 		if ((seek = ft_memchr(str, '\n', ft_strlen(str))))
 		{
@@ -96,6 +97,8 @@ char	*ft_get_buff(int fd, int buff_size)
 			str = seek + 1;
 			return (temp);
 		}
+		else
+			temp = (char*)malloc(sizeof(char) * (size_t)(size + 1));
 	}
 	free(temp);
 	temp = (char*)malloc(sizeof(char) * (size_t)(seek - str + 1));
@@ -111,9 +114,13 @@ void	ft_read(int fd)
 	str = ft_get_buff(fd, BUFF_SIZE);
 	if (str)
 	{
+
 		ft_putstr(str);
 		str = ft_get_buff(fd, BUFF_SIZE);
 		ft_putstr(str);
+		str = ft_get_buff(fd, BUFF_SIZE);
+		ft_putstr(str);
+
 	}
 	if (fd > 1)
 		close(fd);
