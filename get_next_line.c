@@ -6,7 +6,7 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/24 18:01:52 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/24 18:49:49 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,11 +56,23 @@ char	*ft_get_buff(int fd, int buff_size)
 	static char *str;
 	char	    *temp;
 	int		    size;
-	size_t      seek;
+	char        *seek;
 	size_t      buff_bytes;
 
 	size = 0;
-	if (str == NULL)
+	if (str)
+	{
+		if ((seek = ft_memchr(str, '\n', ft_strlen(str))))
+		{
+			temp = (char*)malloc(sizeof(char) * (seek - str + 1));
+			ft_strncpy(temp, str, (size_t)(seek -str + 1));
+			str = seek + 1;
+			return (temp);
+		}
+		else
+			size = ft_strlen(str) ;
+	}
+	else
 	{
 		str = (char*)malloc(sizeof(char) * (size + 1));
 		str[0] = 0;
@@ -77,18 +89,18 @@ char	*ft_get_buff(int fd, int buff_size)
 		ft_strlcat(str, buff, size +1);
 		str[size] = '\0';
 		free(temp);
-		temp = (char*)malloc(sizeof(char) * (size + 1));
-		ft_stop_read(&size, buff_bytes);
-		seek = size - buff_bytes;
-		while (seek < buff_bytes && buff[seek] != '\n')
-			seek++;
-		if (buff[seek] == '\n')
-			break;
+		if ((seek = ft_memchr(str, '\n', ft_strlen(str))))
+		{
+			temp = (char*)malloc(sizeof(char) * (size_t)(seek - str + 1));
+			ft_strncpy(temp, str, seek -str + 1);
+			str = seek + 1;
+			return (temp);
+		}
 	}
 	free(temp);
-	temp = (char*)malloc(sizeof(char) * (seek + 1));
-	ft_strncpy(temp, str, seek + 1);
-	str = ft_strsub(str,seek + 1, size - seek);
+	temp = (char*)malloc(sizeof(char) * (size_t)(seek - str + 1));
+	ft_strncpy(temp, str, (size_t )(seek + 1));
+	str = (char *)ft_memchr(str,'\n', (size_t)(seek - str + 1));
 	return (temp);
 }
 
