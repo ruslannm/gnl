@@ -6,7 +6,7 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/24 19:50:18 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/25 15:33:15 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,42 +53,51 @@ void	ft_stop_read(int *size, int buff_size)
 char	*ft_get_buff(int fd, int buff_size)
 {
 	char	    buff[buff_size + 1];
-	static char str[buff_size];
-	char	    *temp;
+	static char *tail;
+	char	    *ret;
 	int		    size;
 	char        *seek;
 	size_t      buff_bytes;
 
 	size = 0;
-	if (str && str[0] != 0)
-		size = ft_strlen(str) ;
+	if (tail && tail[0] != 0)
+		size = ft_strlen(tail) ;
 	else
-		str[0] = 0;
-	temp = (char*)malloc(sizeof(char) * (size + 1));
-	temp[0] = 0;
+	{
+		tail = (char*)malloc(sizeof(char));
+		tail[0] = 0;
+	}
+	ret = (char*)malloc(sizeof(char) * (buff_size + size + 1));
+	ret[0] = 0;
 	while ((buff_bytes = read(fd, buff, buff_size)))
 	{
 		size += buff_bytes;
-		ft_strcpy(temp, str);
-		ft_strcpy(str, temp);
-		ft_strlcat(str, buff, size +1);
+		ft_strlcat(tail, buff, size +1);
 //		str[size] = '\0';
-		free(temp);
-		if ((seek = ft_memchr(str, '\n', ft_strlen(str))))
+		free(ret);
+		if (ft_memchr(tail, '\n', ft_strlen(tail)))
 		{
-			temp = (char*)malloc(sizeof(char) * (size_t)(seek - str + 1));
-			ft_strncpy(temp, str, seek -str + 1);
-			str = seek + 1;
-			return (temp);
+			seek = (char*)malloc(sizeof(char) *ft_strlen(tail));
+			seek = ft_memchr(tail, '\n', ft_strlen(tail));
+			ret = (char*)malloc(sizeof(char) * (size_t)(seek - tail + 1));
+			ft_strncpy(ret, tail, seek -tail + 1);
+			size = ft_strlen(tail) - seek;
+			free(tail);
+			tail = (char*)malloc(sizeof(char) * (size_t)(size + 1));
+			ft_strncpy(tail, seek, ft_strlen(seek));
+			free(seek);
+			return (ret);
 		}
 		else
-			temp = (char*)malloc(sizeof(char) * (size_t)(size + 1));
+		{
+			ret = (char *) malloc(sizeof(char) * (size_t) (size + 1));
+		}
 	}
-	free(temp);
-	temp = (char*)malloc(sizeof(char) * (size_t)(seek - str + 1));
-	ft_strncpy(temp, str, (size_t )(seek + 1));
-	str = (char *)ft_memchr(str,'\n', (size_t)(seek - str + 1));
-	return (temp);
+	free(ret);
+	ret = (char*)malloc(sizeof(char) * (size_t)(seek - tail + 1));
+	ft_strncpy(ret, tail, (size_t )(seek + 1));
+	tail = (char *)ft_memchr(tail,'\n', (size_t)(seek - tail + 1));
+	return (ret);
 }
 
 void	ft_read(int fd)
