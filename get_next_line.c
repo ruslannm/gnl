@@ -6,7 +6,7 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/25 15:33:15 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/25 17:12:24 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,47 +56,42 @@ char	*ft_get_buff(int fd, int buff_size)
 	static char *tail;
 	char	    *ret;
 	int		    size;
-	char        *seek;
 	size_t      buff_bytes;
 
-	size = 0;
 	if (tail && tail[0] != 0)
-		size = ft_strlen(tail) ;
+	{
+		ret = ft_strdup(tail);
+		size = ft_strlen(ret);
+	}
 	else
 	{
-		tail = (char*)malloc(sizeof(char));
-		tail[0] = 0;
+		ret = (char *) malloc(sizeof(char) * (buff_size + 1));
+		size = 0;
+		ret[0] = 0;
 	}
-	ret = (char*)malloc(sizeof(char) * (buff_size + size + 1));
-	ret[0] = 0;
 	while ((buff_bytes = read(fd, buff, buff_size)))
 	{
 		size += buff_bytes;
-		ft_strlcat(tail, buff, size +1);
-//		str[size] = '\0';
-		free(ret);
-		if (ft_memchr(tail, '\n', ft_strlen(tail)))
+		ft_strlcat(ret, buff, size +1);
+		ret[size] = '\0';
+		free(tail);
+		tail = (char *) malloc(sizeof(char) * (buff_size + 1));
+		if ((tail = ft_memchr(ret, '\n', ft_strlen(ret))))
 		{
-			seek = (char*)malloc(sizeof(char) *ft_strlen(tail));
-			seek = ft_memchr(tail, '\n', ft_strlen(tail));
-			ret = (char*)malloc(sizeof(char) * (size_t)(seek - tail + 1));
-			ft_strncpy(ret, tail, seek -tail + 1);
-			size = ft_strlen(tail) - seek;
-			free(tail);
-			tail = (char*)malloc(sizeof(char) * (size_t)(size + 1));
-			ft_strncpy(tail, seek, ft_strlen(seek));
-			free(seek);
-			return (ret);
+			ret[tail - ret + 1] = '\0';
+			break;
 		}
+		else if (buff_bytes < buff_size)
+			break; //end file
 		else
 		{
+			tail = ft_strdup(ret);
+			free(ret);
 			ret = (char *) malloc(sizeof(char) * (size_t) (size + 1));
+			ret = ft_strcpy(ret, tail);
+			free(tail);
 		}
 	}
-	free(ret);
-	ret = (char*)malloc(sizeof(char) * (size_t)(seek - tail + 1));
-	ft_strncpy(ret, tail, (size_t )(seek + 1));
-	tail = (char *)ft_memchr(tail,'\n', (size_t)(seek - tail + 1));
 	return (ret);
 }
 
