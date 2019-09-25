@@ -53,39 +53,23 @@ void	ft_stop_read(int *size, int buff_size)
 char	*ft_get_buff(int fd, int buff_size)
 {
 	char	    buff[buff_size + 1];
-	static char *str;
+	static char str[buff_size];
 	char	    *temp;
 	int		    size;
 	char        *seek;
 	size_t      buff_bytes;
 
 	size = 0;
-	if (str)
-	{
-		if ((seek = ft_memchr(str, '\n', ft_strlen(str))))
-		{
-			temp = (char*)malloc(sizeof(char) * (seek - str + 1));
-			ft_strncpy(temp, str, (size_t)(seek -str + 1));
-			str = seek + 1;
-			return (temp);
-		}
-		else
-			size = ft_strlen(str) ;
-	}
+	if (str && str[0] != 0)
+		size = ft_strlen(str) ;
 	else
-	{
-		str = (char*)malloc(sizeof(char) * (size + 1));
 		str[0] = 0;
-	}
 	temp = (char*)malloc(sizeof(char) * (size + 1));
 	temp[0] = 0;
-	while ((buff_bytes = read(fd, buff, buff_size)) && str && temp )
+	while ((buff_bytes = read(fd, buff, buff_size)))
 	{
 		size += buff_bytes;
 		ft_strcpy(temp, str);
-		if (str[0] != 0)
-			free(str);
-		str = (char*)malloc(sizeof(char) * (size + 1));
 		ft_strcpy(str, temp);
 		ft_strlcat(str, buff, size +1);
 //		str[size] = '\0';
