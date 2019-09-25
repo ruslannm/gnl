@@ -6,7 +6,7 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/25 17:12:24 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/25 17:13:00 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@ char	*ft_get_buff(int fd, int buff_size)
 	{
 		size += buff_bytes;
 		ft_strlcat(ret, buff, size +1);
-		ret[size] = '\0';
+		//ret[size] = '\0';
 		free(tail);
 		tail = (char *) malloc(sizeof(char) * (buff_size + 1));
 		if ((tail = ft_memchr(ret, '\n', ft_strlen(ret))))
@@ -87,7 +87,7 @@ char	*ft_get_buff(int fd, int buff_size)
 		{
 			tail = ft_strdup(ret);
 			free(ret);
-			ret = (char *) malloc(sizeof(char) * (size_t) (size + 1));
+			ret = (char *) malloc(sizeof(char) * (size_t) (size + buff_size + 1));
 			ret = ft_strcpy(ret, tail);
 			free(tail);
 		}
