@@ -6,7 +6,7 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/26 17:59:47 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/26 18:49:35 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,8 +73,7 @@ char	*ft_get_buff(int fd, int *res)
 			else
 			{
 				free(ret);
-				ret = (char *) ft_memalloc(sizeof(char) * (size_t) (size + BUFF_SIZE + 1));
-				ret[0] = '33';
+				ret = (char *)ft_memalloc(sizeof(char) * (size[0] + BUFF_SIZE + 1));
 				ret = ft_strcpy(ret, tail);
 				free(tail);
 			}
