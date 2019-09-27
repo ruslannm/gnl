@@ -6,7 +6,7 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/27 16:18:29 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/27 16:47:50 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ int ft_str_split_end(char **ret, char **tail)
 	int res;
 	int len;
 	char *seekchr;
+	char *tmp;
 
 	res = 0;
 	seek = 0;
@@ -30,7 +31,11 @@ int ft_str_split_end(char **ret, char **tail)
 	{
 		seek = seekchr - *ret;
 		*tail = ft_strsub(*ret, seek + 1, len - seek);
-        *ret[seek] = '\0';
+        tmp = ft_strsub(*ret, 0, seek);
+        tmp[seek] = '\0';
+		free(*ret);
+		*ret = ft_strdup(tmp);
+        free(tmp);
 		res=1;
 	}
 	else
@@ -64,7 +69,7 @@ char	*ft_get_buff(int fd, int *res)
 		{
 			size[0] += buff_bytes;
 			ft_strlcat(ret, buff, size[0] + 1);
-			if ((size[1] = ft_str_split_end(&ret, &tail)))
+			if (ft_memchr (*ret, '\n', len))
 			{
 				*res = *res - size[1];
 			}
