@@ -6,7 +6,7 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/26 18:49:35 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/27 16:18:29 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ int ft_str_split_end(char **ret, char **tail)
 	if ((seekchr = ft_memchr (*ret, '\n', len)))
 	{
 		seek = seekchr - *ret;
-		*tail = ft_strdup(ret[seek + 1]);
+		*tail = ft_strsub(*ret, seek + 1, len - seek);
         *ret[seek] = '\0';
 		res=1;
 	}
