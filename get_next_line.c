@@ -6,7 +6,7 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/27 16:47:50 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/27 18:13:40 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,23 +26,19 @@ int ft_str_split_end(char **ret, char **tail)
 
 	res = 0;
 	seek = 0;
-	len = ft_strlen(*ret);
-	if ((seekchr = ft_memchr (*ret, '\n', len)))
+	len = ft_strlen(*tail);
+	if ((seekchr = ft_memchr (*tail, '\n', len)))
 	{
-		seek = seekchr - *ret;
-		*tail = ft_strsub(*ret, seek + 1, len - seek);
-        tmp = ft_strsub(*ret, 0, seek);
-        tmp[seek] = '\0';
-		free(*ret);
-		*ret = ft_strdup(tmp);
+		seek = seekchr - *tail;
+		*ret = ft_strsub(*tail, 0, seek);
+		tmp = ft_strsub(*tail, seek + 1, len - seek);
+        free(*tail);
+		*tail = ft_strdup(tmp);
         free(tmp);
 		res=1;
 	}
 	else
-	{
-		*tail = ft_strdup(ret[0]);
 		res=0;
-	}
 	return (res);
 }
 
@@ -56,11 +52,8 @@ char	*ft_get_buff(int fd, int *res)
 
 	size[0] = 0;
 	if (tail && tail[0] != 0)
-	{
-		ret = ft_strdup(tail);
-		size[0] = ft_strlen(ret);
-		free(tail);
-	}
+		if (ft_str_split_end(ret, tail))
+			return (ret);
 	else
 		ret = (char *) ft_memalloc(sizeof(char)*(BUFF_SIZE + 2));
 	while (*res > 1)
@@ -69,16 +62,15 @@ char	*ft_get_buff(int fd, int *res)
 		{
 			size[0] += buff_bytes;
 			ft_strlcat(ret, buff, size[0] + 1);
-			if (ft_memchr (*ret, '\n', len))
-			{
-				*res = *res - size[1];
-			}
-			else if (buff_bytes < BUFF_SIZE)
-				*res = 0;
+			if (buff_bytes < BUFF_SIZE)
+				*res = 0; //end
 			else
 			{
+				if (ft_memchr (ret, '\n', ft_strlen(ret)))
+					*res = *res - 1;
+				tail = ft_strdup(ret);
 				free(ret);
-				ret = (char *)ft_memalloc(sizeof(char) * (size[0] + BUFF_SIZE + 1));
+				ret	= (char *)ft_memalloc(sizeof(char) * (size[0] + BUFF_SIZE + 1));
 				ret = ft_strcpy(ret, tail);
 				free(tail);
 			}
