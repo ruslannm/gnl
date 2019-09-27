@@ -6,17 +6,16 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/27 18:13:40 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/27 19:22:21 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
 #include <libft.h>
 
-int ft_str_split_end(char **ret, char **tail)
+int ft_str_split_end(char **ret, char **tail, int noend)
 {
 	int seek;
 	int res;
@@ -37,6 +36,11 @@ int ft_str_split_end(char **ret, char **tail)
         free(tmp);
 		res=1;
 	}
+	else if (noend == 0)
+	{
+		*ret = ft_strdup(*tail);
+		free(*tail);
+	}
 	else
 		res=0;
 	return (res);
@@ -52,32 +56,37 @@ char	*ft_get_buff(int fd, int *res)
 
 	size[0] = 0;
 	if (tail && tail[0] != 0)
-		if (ft_str_split_end(ret, tail))
+	{
+		if (ft_str_split_end(&ret, &tail, *res))
 			return (ret);
+	}
 	else
-		ret = (char *) ft_memalloc(sizeof(char)*(BUFF_SIZE + 2));
+		tail = (char *) ft_memalloc(sizeof(char)*(BUFF_SIZE + 2));
 	while (*res > 1)
 	{
 		if ((buff_bytes = read(fd, buff, BUFF_SIZE)) > 0)
 		{
 			size[0] += buff_bytes;
-			ft_strlcat(ret, buff, size[0] + 1);
+			ft_strlcat(tail, buff, size[0] + 1);
 			if (buff_bytes < BUFF_SIZE)
 				*res = 0; //end
 			else
 			{
-				if (ft_memchr (ret, '\n', ft_strlen(ret)))
+				if (ft_memchr (tail, '\n', ft_strlen(tail)))
 					*res = *res - 1;
-				tail = ft_strdup(ret);
-				free(ret);
-				ret	= (char *)ft_memalloc(sizeof(char) * (size[0] + BUFF_SIZE + 1));
-				ret = ft_strcpy(ret, tail);
+				ret = ft_strdup(tail);
 				free(tail);
+				tail = (char *)ft_memalloc(sizeof(char) * (size[0] + BUFF_SIZE + 1));
+				tail = ft_strcpy(tail, ret);
+				free(ret);
 			}
 		}
 		else
 			*res = 0;
 	}
+	ft_str_split_end(&ret, &tail, *res);
+	if (*res == 0)
+		close(fd);
 	return (ret);
 }
 
@@ -90,32 +99,4 @@ int	get_next_line(const int fd, char **line)
 	res = 3;
 	*line = ft_get_buff(fd, &res);
 	return (res);
-}
-
-void	ft_read(int fd)
-{
-	char	*str;
-	int i;
-
-	i = get_next_line(fd, &str);
-	if (str)
-	{
-		ft_putstr(str);
-		ft_putstr("-");
-		ft_putnbr(i);
-		ft_putstr("-");
-		i = get_next_line(fd, &str);
-		ft_putstr(str);
-		ft_putstr("-");
-		ft_putnbr(i);
-		ft_putstr("-");
-		i = get_next_line(fd, &str);
-		ft_putstr(str);
-		ft_putstr("-");
-		ft_putnbr(i);
-		ft_putstr("-");
-
-	}
-	if (fd > 1)
-		close(fd);
 }
