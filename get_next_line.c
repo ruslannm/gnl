@@ -6,13 +6,13 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/29 13:47:13 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/29 14:59:44 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-char    *ft_str_split_end(char **tail, int *res, size_t buff_bytes)
+char    *ft_str_split_end(char **tail, int *res, ssize_t buff_bytes)
 {
 	int seek;
 	int len;
@@ -37,7 +37,7 @@ char    *ft_str_split_end(char **tail, int *res, size_t buff_bytes)
 		}
 		*res = (*res == 0 ? 0 : 1);
 	}
-	else if (buff_bytes < BUFF_SIZE && *res == 2)
+	else if (buff_bytes > 0 && *res >= 1)
 	{
 		ret = ft_strdup(*tail);
 		ft_memdel((void **)&(*tail));
@@ -48,8 +48,6 @@ char    *ft_str_split_end(char **tail, int *res, size_t buff_bytes)
 		ret = ft_strdup(*tail);
 		ft_memdel((void **)&(*tail));
 	}
-	else
-		*res = 0;
 	return (ret);
 }
 
@@ -58,13 +56,13 @@ char	*ft_get_buff(int fd, int *res)
 	char	    buff[BUFF_SIZE + 1];
 	static char *tail;
 	int		    size[2];
-	size_t      buff_bytes;
+	ssize_t      buff_bytes;
 	char         *ret;
 
 	size[0] = 0;
 	if (tail && tail[0] != '\0')
 	{
-		if ((ret = ft_str_split_end(&tail, &(*res), 0)))
+		if ((ret = ft_str_split_end(&tail, &(*res), BUFF_SIZE)))
 			return (ret);
 	}
 	else
@@ -74,7 +72,8 @@ char	*ft_get_buff(int fd, int *res)
 		if ((buff_bytes = read(fd, buff, BUFF_SIZE)) > 0)
 		{
 			size[0] += buff_bytes;
-			ft_strlcat(tail, buff, size[0] + 1);
+			ft_strlcat(tail, buff, ft_strlen(tail) + buff_bytes + 1);
+			ft_bzero(buff, BUFF_SIZE + 1);
 			if (ft_memchr(tail, '\n', ft_strlen(tail)) || buff_bytes < BUFF_SIZE)
 				*res = *res - 1;
 			else
@@ -88,6 +87,11 @@ char	*ft_get_buff(int fd, int *res)
 				ft_memdel((void **)&ret);
 				//free(ret);
 			}
+		}
+		else if (buff_bytes == -1)
+		{
+			*res = -1;
+			return(NULL);
 		}
 		else
 			*res = 0;
