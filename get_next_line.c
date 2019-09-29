@@ -6,7 +6,7 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/29 15:38:52 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/29 16:45:11 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,16 +44,13 @@ char    *ft_str_split_end(char **tail, int *res, ssize_t buff_bytes)
 		*res = 1;
 	}
 	else if (*res == 0)
-	{
-		ret = ft_strdup(*tail);
 		ft_memdel((void **)&(*tail));
-	}
 	return (ret);
 }
 
 char	*ft_get_buff(int fd, int *res)
 {
-	char	    buff[BUFF_SIZE + 1];
+	char	    buff[BUFF_SIZE];
 	static char *tail;
 	int		    size[2];
 	ssize_t      buff_bytes;
@@ -66,14 +63,14 @@ char	*ft_get_buff(int fd, int *res)
 			return (ret);
 	}
 	else
-		tail = (char *) ft_memalloc(sizeof(char)*(BUFF_SIZE + 2));
+		tail = (char *) ft_memalloc(sizeof(char)*(BUFF_SIZE + 1));
 	while (*res > 1)
 	{
 		if ((buff_bytes = read(fd, buff, BUFF_SIZE)) > 0)
 		{
 			size[0] += buff_bytes;
 			ft_strlcat(tail, buff, ft_strlen(tail) + buff_bytes + 1);
-			ft_bzero(buff, BUFF_SIZE + 1);
+			ft_bzero(buff, BUFF_SIZE);
 			if (ft_memchr(tail, '\n', ft_strlen(tail)) || buff_bytes < BUFF_SIZE)
 				*res = *res - 1;
 			else
@@ -82,7 +79,7 @@ char	*ft_get_buff(int fd, int *res)
 				ft_memdel((void **)&tail);
 				//tail[0] = '\0';
 				//free(tail);
-				tail = (char *) ft_memalloc(sizeof(char) * (size[0] + BUFF_SIZE + 1));
+				tail = (char *) ft_memalloc(sizeof(char) * (ft_strlen(ret) + BUFF_SIZE + 1));
 				tail = ft_strcpy(tail, ret);
 				ft_memdel((void **)&ret);
 				//free(ret);
@@ -97,6 +94,8 @@ char	*ft_get_buff(int fd, int *res)
 			*res = (tail == NULL || tail[0] == '\0' ? 0 : 1);
 	}
 	ret = ft_str_split_end(&tail, &(*res), buff_bytes);
+	if (ret)
+		free(ret);
 	return (ret);
 }
 
