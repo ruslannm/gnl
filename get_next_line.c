@@ -6,49 +6,51 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/29 12:38:45 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/29 13:47:13 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-int ft_str_split_end(char **ret, char **tail, int noend)
+char    *ft_str_split_end(char **tail, int *res, size_t buff_bytes)
 {
 	int seek;
-	int res;
 	int len;
 	char *seekchr;
 	char *tmp;
+	char *ret;
 
-	res = 0;
-	seek = 0;
+	ret = NULL;
 	len = ft_strlen(*tail);
 	if ((seekchr = ft_memchr (*tail, '\n', len)))
 	{
 		seek = seekchr - *tail;
-		*ret = ft_strsub(*tail, 0, seek);
+		ret = ft_strsub(*tail, 0, seek);
 		if ((len - seek) == 1)
-		{
-			*tail[0] = '\0';
-			free(*tail);
-		}
+			ft_memdel((void **)&(*tail));
 		else
 		{
 			tmp = ft_strsub(*tail, seek + 1, len - seek);
-			free(*tail);
+			ft_memdel((void **)&(*tail));
 			*tail = ft_strdup(tmp);
 			free(tmp);
 		}
-		res = (noend == 0 ? 0 : 1);
+		*res = (*res == 0 ? 0 : 1);
 	}
-	else if (noend == 0)
+	else if (buff_bytes < BUFF_SIZE && *res == 2)
 	{
-		*ret = ft_strdup(*tail);
-		free(*tail);
+		ret = ft_strdup(*tail);
+		ft_memdel((void **)&(*tail));
+		*res = 1;
+	}
+	else if (*res == 0)
+	{
+		ret = ft_strdup(*tail);
+		ft_memdel((void **)&(*tail));
 	}
 	else
-		res=0;
-	return (res);
+		*res = 0;
+	return (ret);
 }
 
 char	*ft_get_buff(int fd, int *res)
@@ -62,7 +64,7 @@ char	*ft_get_buff(int fd, int *res)
 	size[0] = 0;
 	if (tail && tail[0] != '\0')
 	{
-		if (ft_str_split_end(&ret, &tail, *res))
+		if ((ret = ft_str_split_end(&tail, &(*res), 0)))
 			return (ret);
 	}
 	else
@@ -75,16 +77,22 @@ char	*ft_get_buff(int fd, int *res)
 			ft_strlcat(tail, buff, size[0] + 1);
 			if (ft_memchr(tail, '\n', ft_strlen(tail)) || buff_bytes < BUFF_SIZE)
 				*res = *res - 1;
-			ret = ft_strdup(tail);
-			free(tail);
-			tail = (char *) ft_memalloc(sizeof(char) * (size[0] + BUFF_SIZE + 1));
-			tail = ft_strcpy(tail, ret);
-			free(ret);
+			else
+			{
+				ret = ft_strdup(tail);
+				ft_memdel((void **)&tail);
+				//tail[0] = '\0';
+				//free(tail);
+				tail = (char *) ft_memalloc(sizeof(char) * (size[0] + BUFF_SIZE + 1));
+				tail = ft_strcpy(tail, ret);
+				ft_memdel((void **)&ret);
+				//free(ret);
+			}
 		}
 		else
 			*res = 0;
 	}
-	ft_str_split_end(&ret, &tail, *res);
+	ret = ft_str_split_end(&tail, &(*res), buff_bytes);
 	return (ret);
 }
 
