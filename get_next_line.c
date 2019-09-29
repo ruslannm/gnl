@@ -6,14 +6,11 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/27 19:22:21 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/29 11:55:23 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-#include <stdlib.h>
-#include <string.h>
-#include <libft.h>
 
 int ft_str_split_end(char **ret, char **tail, int noend)
 {
@@ -34,7 +31,7 @@ int ft_str_split_end(char **ret, char **tail, int noend)
         free(*tail);
 		*tail = ft_strdup(tmp);
         free(tmp);
-		res=1;
+		res = (noend == 0 ? 0 : 1);
 	}
 	else if (noend == 0)
 	{
@@ -85,8 +82,8 @@ char	*ft_get_buff(int fd, int *res)
 			*res = 0;
 	}
 	ft_str_split_end(&ret, &tail, *res);
-	if (*res == 0)
-		close(fd);
+	//if (*res == 0)
+	//	close(fd);
 	return (ret);
 }
 
@@ -96,7 +93,7 @@ int	get_next_line(const int fd, char **line)
 
 	if (fd < 0 || fd > 10240 || line == NULL || BUFF_SIZE <= 0)
 		return (-1);
-	res = 3;
+	res = 2;
 	*line = ft_get_buff(fd, &res);
 	return (res);
 }
