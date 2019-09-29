@@ -6,14 +6,12 @@
 /*   By: rgero <rgero@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 18:36:53 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/24 16:22:07 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/29 11:40:56 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-#include <stdio.h>
-#include "libft.h"
+
 #include "get_next_line.h"
-#include <fcntl.h>
-#include <unistd.h>
+#include <stdio.h>
 
 void	ft_read(int fd)
 {
@@ -49,10 +47,10 @@ int main(int argc, char **argv)
 
 
 
-	if (argc == 1)
+	if (argc == 2)
 	{
 		i = 0;
-		fd = open("test.txt", O_RDONLY);
+		fd = open(argv[1], O_RDONLY);
 		ft_read(fd);
 		/*
 		while ((get_next_line(fd, &line)) == 1)
@@ -61,7 +59,7 @@ int main(int argc, char **argv)
 			ft_putchar('\n');
 		}
 		*/
-		close(fd);
+		//close(fd);
 	}
 	return (0);
 
