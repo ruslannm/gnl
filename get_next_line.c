@@ -6,7 +6,7 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/29 16:45:11 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/30 18:12:53 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,10 +30,10 @@ char    *ft_str_split_end(char **tail, int *res, ssize_t buff_bytes)
 			ft_memdel((void **)&(*tail));
 		else
 		{
-			tmp = ft_strsub(*tail, seek + 1, len - seek);
+			tmp = ft_strsub(*tail, seek + 1, len - seek - 1);
 			ft_memdel((void **)&(*tail));
 			*tail = ft_strdup(tmp);
-			free(tmp);
+			ft_memdel((void **)&tmp);
 		}
 		*res = (*res == 0 ? 0 : 1);
 	}
@@ -50,12 +50,13 @@ char    *ft_str_split_end(char **tail, int *res, ssize_t buff_bytes)
 
 char	*ft_get_buff(int fd, int *res)
 {
-	char	    buff[BUFF_SIZE];
+	char	    *buff;
 	static char *tail;
 	int		    size[2];
 	ssize_t      buff_bytes;
 	char         *ret;
 
+	buff = (char *)malloc(BUFF_SIZE + 1);
 	size[0] = 0;
 	if (tail && tail[0] != '\0')
 	{
@@ -68,6 +69,7 @@ char	*ft_get_buff(int fd, int *res)
 	{
 		if ((buff_bytes = read(fd, buff, BUFF_SIZE)) > 0)
 		{
+			buff[buff_bytes] = '\0';
 			size[0] += buff_bytes;
 			ft_strlcat(tail, buff, ft_strlen(tail) + buff_bytes + 1);
 			ft_bzero(buff, BUFF_SIZE);
@@ -94,8 +96,8 @@ char	*ft_get_buff(int fd, int *res)
 			*res = (tail == NULL || tail[0] == '\0' ? 0 : 1);
 	}
 	ret = ft_str_split_end(&tail, &(*res), buff_bytes);
-	if (ret)
-		free(ret);
+	//if (ret)
+	//	free(ret);
 	return (ret);
 }
 
@@ -106,6 +108,11 @@ int	get_next_line(const int fd, char **line)
 	if (fd < 0 || fd > 10240 || line == NULL || BUFF_SIZE <= 0)
 		return (-1);
 	res = 2;
+	if (line)
+	{
+		free(*line);
+		*line = NULL;
+	}
 	*line = ft_get_buff(fd, &res);
 	return (res);
 }
