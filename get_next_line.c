@@ -6,7 +6,7 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/09/30 18:12:53 by rgero            ###   ########.fr       */
+/*   Updated: 2019/09/30 18:49:37 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,8 +55,11 @@ char	*ft_get_buff(int fd, int *res)
 	int		    size[2];
 	ssize_t      buff_bytes;
 	char         *ret;
+	int        buff_pos;
+	int         buff_left;
 
-	buff = (char *)malloc(BUFF_SIZE + 1);
+	buff_left = BUFF_SIZE;
+	buff = (char *)malloc(BUFF_SIZE);
 	size[0] = 0;
 	if (tail && tail[0] != '\0')
 	{
@@ -65,15 +68,23 @@ char	*ft_get_buff(int fd, int *res)
 	}
 	else
 		tail = (char *) ft_memalloc(sizeof(char)*(BUFF_SIZE + 1));
+	buff_pos = 0;
 	while (*res > 1)
 	{
-		if ((buff_bytes = read(fd, buff, BUFF_SIZE)) > 0)
+		if ((buff_bytes = read(fd, buff + buff_pos, buff_left)) > 0)
 		{
-			buff[buff_bytes] = '\0';
-			size[0] += buff_bytes;
-			ft_strlcat(tail, buff, ft_strlen(tail) + buff_bytes + 1);
-			ft_bzero(buff, BUFF_SIZE);
-			if (ft_memchr(tail, '\n', ft_strlen(tail)) || buff_bytes < BUFF_SIZE)
+			buff_pos += buff_bytes;
+			buff_left -= buff_bytes;
+			if (buff_left < (BUFF_SIZE / 2))
+			{
+				ret = ft_strdup(buff);
+				ft_memdel((void **)&buff);
+				buff = (char *)ft_memalloc(sizeof(char) * (BUFF_SIZE + buff_pos + buff_left));
+				buff = ft_strcpy(buff, ret);
+				ft_memdel((void **)&ret);
+				buff_left += BUFF_SIZE;
+			}
+			if (ft_memchr(buff, '\n', buff_pos) || buff_bytes < BUFF_SIZE)
 				*res = *res - 1;
 			else
 			{
