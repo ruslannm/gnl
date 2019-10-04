@@ -6,7 +6,7 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/10/03 19:45:50 by rgero            ###   ########.fr       */
+/*   Updated: 2019/10/04 17:29:00 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,14 +60,14 @@ int   ft_str_split_end(char **tail, char **line, int get_buff)
 		}
 		res = 1;
 	}
-	else if (get_buff == 0)
+	else if (get_buff == -1)
+		res = get_buff;
+	else if (get_buff < BUFF_SIZE)
 	{
 		*line = ft_strdup(*tail);
 		ft_memdel((void **)&(*tail));
 		res = 1;
 	}
-	else if (get_buff == -1)
-		res = get_buff;
 	return (res);
 }
 
@@ -78,7 +78,7 @@ char	*ft_get_buff(int fd, int *res)
 	ssize_t      buff_bytes;
 	int         buff_pos;
 
-	buff = (char *)malloc(BUFF_SIZE);
+	buff = (char *)malloc(BUFF_SIZE + 1);
 	//buff = NULL;
 	buff_pos = 0;
 	while ((buff_bytes = read(fd, buff + buff_pos, BUFF_SIZE)) > 0)
@@ -86,13 +86,11 @@ char	*ft_get_buff(int fd, int *res)
 		buff_pos += buff_bytes;
 		if (ft_memchr(buff, '\n', buff_pos) || buff_bytes < BUFF_SIZE)
 			break;
-		if ((*res = ft_str_realloc(&buff, buff_pos)) == -1)
+		if ((*res = ft_str_realloc(&buff, buff_pos + 1)) == -1)
 			break;
 	}
-	if (buff_bytes > 1)
-		*res = 1;
-	else
-		*res= (int)(buff_bytes);
+	*res= (int)(buff_bytes);
+	buff[buff_pos] = '\0';
 	return (buff);
 }
 
@@ -101,23 +99,31 @@ int	get_next_line(const int fd, char **line)
 	char	    *buff_ret;
 	static char *tail;
 	int         ret;
+	char        *tmp;
 
 	ret = 0;
+	tmp = NULL;
 	if (fd < 0 || fd > 10240 || line == NULL || BUFF_SIZE <= 0)
 		return (-1);
 	if (tail && tail[0] != '\0')
 	{
 		if ((ret = ft_str_split_end(&tail, &(*line), BUFF_SIZE)))
 			return (ret);
+		if (!(tmp = ft_strdup(tail)))
+			return (-1);
+		ft_memdel((void **) &tail);
 	}
-	else
-		tail = (char *) ft_memalloc(sizeof(char)*(BUFF_SIZE + 1));
 	buff_ret = ft_get_buff(fd, &ret);
-	if ((ret = ft_str_realloc(&tail, ft_strlen(tail) + ft_strlen(buff_ret) + 1))  > 0)
+	if (ret == 0)
+		return (0);
+	if (tmp == NULL)
+		tail = ft_strdup(buff_ret);
+	else
 	{
-		tail = strcat(tail, buff_ret);
-		ret = ft_str_split_end(&tail, &(*line), BUFF_SIZE);
+		tail = ft_strjoin(tmp, buff_ret);
+		ft_memdel((void **) &tmp);
 	}
+	ret = ft_str_split_end(&tail, &(*line), ret);
 	ft_memdel((void **) &buff_ret);
 	return (ret);
 }
