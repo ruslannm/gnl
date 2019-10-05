@@ -6,7 +6,7 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/10/04 17:29:00 by rgero            ###   ########.fr       */
+/*   Updated: 2019/10/05 11:17:01 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,38 +43,27 @@ int   ft_str_split_end(char **tail, char **line, int get_buff)
 	char *tmp;
 	int res;
 
-	res = 0;
-	len = ft_strlen(*tail);
-	if ((seekchr = ft_memchr(*tail, '\n', len)))
+	res = (get_buff == 0 ? 0 : 1);
+	tmp = ft_strdup(*tail);
+	ft_memdel((void **)&(*tail));
+	len = ft_strlen(tmp);
+	if ((seekchr = ft_memchr(tmp, '\n', len)) || (len > 0 && get_buff < BUFF_SIZE))
 	{
-		seek = seekchr - *tail;
-		*line = ft_strsub(*tail, 0, seek);
-		if ((len - seek) == 1)
-			ft_memdel((void **)&(*tail));
-		else
-		{
-			tmp = ft_strsub(*tail, seek + 1, len - seek - 1);
-			ft_memdel((void **)&(*tail));
-			*tail = ft_strdup(tmp);
-			ft_memdel((void **)&tmp);
-		}
+		seek = (seekchr != NULL ? seekchr - tmp : len);
+		*line = ft_strsub(tmp, 0, seek);
+		if ((len - seek) > 1)
+			*tail = ft_strsub(tmp, seek + 1, len - seek - 1);
 		res = 1;
 	}
-	else if (get_buff == -1)
-		res = get_buff;
 	else if (get_buff < BUFF_SIZE)
-	{
-		*line = ft_strdup(*tail);
-		ft_memdel((void **)&(*tail));
-		res = 1;
-	}
+		res = ((*line = ft_strdup(tmp)) ? res: -1);
+	ft_memdel((void **)&tmp);
 	return (res);
 }
 
 char	*ft_get_buff(int fd, int *res)
 {
 	char	    *buff;
-	char        *tmp;
 	ssize_t      buff_bytes;
 	int         buff_pos;
 
@@ -103,9 +92,9 @@ int	get_next_line(const int fd, char **line)
 
 	ret = 0;
 	tmp = NULL;
-	if (fd < 0 || fd > 10240 || line == NULL || BUFF_SIZE <= 0)
+	if (fd < 0 || line == NULL || BUFF_SIZE <= 0 || read(fd, NULL, 0) == -1)
 		return (-1);
-	if (tail && tail[0] != '\0')
+	if (tail)
 	{
 		if ((ret = ft_str_split_end(&tail, &(*line), BUFF_SIZE)))
 			return (ret);
@@ -114,15 +103,11 @@ int	get_next_line(const int fd, char **line)
 		ft_memdel((void **) &tail);
 	}
 	buff_ret = ft_get_buff(fd, &ret);
-	if (ret == 0)
-		return (0);
 	if (tmp == NULL)
 		tail = ft_strdup(buff_ret);
 	else
-	{
 		tail = ft_strjoin(tmp, buff_ret);
-		ft_memdel((void **) &tmp);
-	}
+	ft_memdel((void **) &tmp);
 	ret = ft_str_split_end(&tail, &(*line), ret);
 	ft_memdel((void **) &buff_ret);
 	return (ret);
