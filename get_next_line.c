@@ -6,7 +6,7 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/10/05 11:45:43 by rgero            ###   ########.fr       */
+/*   Updated: 2019/10/05 12:01:15 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,24 +44,20 @@ int   ft_str_split_end(char **tail, char **line, int get_buff)
 	int res;
 
 	res = 0;
-	tmp = ft_strdup(*tail);
+	if (!(tmp = ft_strdup(*tail)))
+		return (-1);
 	ft_memdel((void **)&(*tail));
 	len = ft_strlen(tmp);
 	if ((seekchr = ft_memchr(tmp, '\n', len)) || (len > 0 && get_buff < BUFF_SIZE))
 	{
-		seek = (seekchr != NULL ? seekchr - tmp : len);
-		*line = ft_strsub(tmp, 0, seek);
-		if ((len - seek) > 1)
-			*tail = ft_strsub(tmp, seek + 1, len - seek - 1);
 		res = 1;
-	}
-	else if (get_buff < BUFF_SIZE)
-	{
-		*line = ft_strdup(tmp);
-		res = (get_buff == 0 ? 0 : 1);
+		seek = (seekchr != NULL ? seekchr - tmp : len);
+		res = ((*line = ft_strsub(tmp, 0, seek)) ? 1 : -1);
+		if ((len - seek) > 1)
+			res = ((*tail = ft_strsub(tmp, seek + 1, len - seek - 1)) ? 1 : -1);
 	}
 	else
-		*tail = ft_strdup(tmp);
+		res = (((*line = ft_strdup("")) && (*tail = ft_strdup(tmp))) ? 0 : -1);
 	ft_memdel((void **)&tmp);
 	return (res);
 }
