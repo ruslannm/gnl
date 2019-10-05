@@ -6,7 +6,7 @@
 /*   By: rgero <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 16:31:45 by rgero             #+#    #+#             */
-/*   Updated: 2019/10/05 11:17:01 by rgero            ###   ########.fr       */
+/*   Updated: 2019/10/05 11:45:43 by rgero            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ int   ft_str_split_end(char **tail, char **line, int get_buff)
 	char *tmp;
 	int res;
 
-	res = (get_buff == 0 ? 0 : 1);
+	res = 0;
 	tmp = ft_strdup(*tail);
 	ft_memdel((void **)&(*tail));
 	len = ft_strlen(tmp);
@@ -56,7 +56,12 @@ int   ft_str_split_end(char **tail, char **line, int get_buff)
 		res = 1;
 	}
 	else if (get_buff < BUFF_SIZE)
-		res = ((*line = ft_strdup(tmp)) ? res: -1);
+	{
+		*line = ft_strdup(tmp);
+		res = (get_buff == 0 ? 0 : 1);
+	}
+	else
+		*tail = ft_strdup(tmp);
 	ft_memdel((void **)&tmp);
 	return (res);
 }
