@@ -12,24 +12,60 @@
 
 #include "get_next_line.h"
 
+static void	ft_del(void *content, size_t len)
+{
+	ft_bzero(content, len);
+	free(content);
+}
+
+static int		ft_lst_del(t_list *root, int fd, char **tail)
+{
+	t_list			*tmp;
+	t_list			*prev;
+
+	if (!root )
+		return (0);
+	tmp = root;
+	prev = NULL;
+	while (tmp)
+	{
+		if ((int)tmp->content_size == fd)
+		{
+			prev->next = tmp->next;
+			ft_lstdelone(&tmp, &ft_del);
+			return (0);
+		}
+		prev = tmp;
+		tmp = tmp->next;
+	}
+	prev->next = ft_lstnew(*tail, ft_strlen(*tail));
+	prev->content_size = fd;
+	return (0);
+}
+
 static t_list		*ft_lst_search(int fd, char **tail)
 {
 	static t_list	*root;
 	t_list			*tmp;
+	t_list			*prev;
 
-	if (!root)
+	if (!root )
 	{
 		root = ft_lstnew(*tail, ft_strlen(*tail));
 		root->content_size = fd;
+		return (root);
 	}
 	tmp = root;
 	while (tmp)
 	{
 		if ((int)tmp->content_size == fd)
 			return (tmp);
+		prev = tmp;
 		tmp = tmp->next;
 	}
-	return (NULL);
+	prev->next = ft_lstnew(*tail, ft_strlen(*tail));
+	prev->content_size = fd;
+	return (prev);
 }
 
 int		ft_str_realloc(char **str, int new_len)
@@ -41,9 +77,7 @@ int		ft_str_realloc(char **str, int new_len)
 	p = *str;
 	tmp = ft_strdup(*str);
 	if (!(*str = (char *)ft_memalloc(sizeof(char) * (new_len + 1))))
-	{
 		res = -1;
-	}
 	else
 	{
 		*str = p;
@@ -56,15 +90,16 @@ int		ft_str_realloc(char **str, int new_len)
 
 int		ft_str_split_end(char **tail, char **line, int get_buff, int fd)
 {
-	int		seek;
-	int		l;
-	char	*chr;
-	int		res;
-	static t_list	*root;
+	int				seek;
+	int				l;
+	char			*chr;
+	int				res;
+	static t_list	*list;
 
 	res = 0;
-	if (!(*tail))
+	if (!*tail)
 		return (0);
+	list = ft_lst_search(fd, &(*tail));
 	l = ft_strlen(*tail);
 	if ((chr = ft_memchr(*tail, '\n', l)) || (l > 0 && get_buff < BUFF_SIZE))
 	{
@@ -73,7 +108,7 @@ int		ft_str_split_end(char **tail, char **line, int get_buff, int fd)
 		if (!(*line = ft_strsub(*tail, 0, seek)))
 			res = -1;
 		if (*line && (l - seek) > 1)
-			*tail = ft_memmove(*tail, chr + 1, l - seek);
+			list->content = ft_memmove(list->content, chr + 1, l - seek);
 		else
 			ft_memdel((void **)&(*tail));
 	}
