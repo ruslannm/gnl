@@ -75,7 +75,7 @@ int		ft_get_buff(int fd, char **buff)
 	while ((buff_bytes = read(fd, *buff + buff_pos, BUFF_SIZE)) > 0)
 	{
 		buff_pos += buff_bytes;
-		if (ft_memchr(buff, '\n', buff_pos) || buff_bytes < BUFF_SIZE)
+		if (ft_memchr(*buff, '\n', buff_pos) || buff_bytes < BUFF_SIZE)
 			break ;
 		if ((res = ft_str_realloc(&(*buff), buff_pos + 1)) == -1)
 			break ;
