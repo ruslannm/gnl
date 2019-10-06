@@ -12,6 +12,20 @@
 
 #include "get_next_line.h"
 
+t_list		*ft_lst_search(t_list *list, int fd)
+{
+	t_list	*tmp;
+
+	tmp = list;
+	while (tmp)
+	{
+		if ((int)tmp->content_size == fd)
+			return (tmp);
+		tmp = tmp->next;
+	}
+	return (NULL);
+}
+
 int		ft_str_realloc(char **str, int new_len)
 {
 	char	*tmp;
@@ -39,27 +53,21 @@ int		ft_str_split_end(char **tail, char **line, int get_buff, int res)
 	int		seek;
 	int		l;
 	char	*chr;
-	char	*tmp;
 
 	if (!(*tail))
 		return (0);
-	if (!(tmp = ft_strdup(*tail)))
-		return (-1);
-	ft_memdel((void **)&(*tail));
-	l = ft_strlen(tmp);
-	if ((chr = ft_memchr(tmp, '\n', l)) || (l > 0 && get_buff < BUFF_SIZE))
+	l = ft_strlen(*tail);
+	if ((chr = ft_memchr(*tail, '\n', l)) || (l > 0 && get_buff < BUFF_SIZE))
 	{
 		res = 1;
-		seek = (chr != NULL ? chr - tmp : l);
-		if (!(*line = ft_strsub(tmp, 0, seek)))
+		seek = (chr != NULL ? chr - *tail : l);
+		if (!(*line = ft_strsub(*tail, 0, seek)))
 			res = -1;
-		if ((l - seek) > 1)
-			if (!(*tail = ft_strsub(tmp, seek + 1, l - seek - 1)))
-				res = -1;
+		if (*line && (l - seek) > 1)
+			*tail = ft_memmove(*tail, chr + 1, l - seek);
+		else
+			ft_memdel((void **)&(*tail));
 	}
-	else if (!(*tail = ft_strdup(tmp)))
-		res = -1;
-	ft_memdel((void **)&tmp);
 	return (res);
 }
 
