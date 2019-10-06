@@ -15,27 +15,29 @@
 static void	ft_del(void *content, size_t len)
 {
 	len = 0;
+	content = NULL;
 	free(content);
 }
 
-static char		*ft_lst_pop(t_list *root, int fd)
+static char		*ft_lst_pop(t_list **root, int fd)
 {
 	t_list	*tmp;
 	t_list	*prev;
 	char 	*ret;
 
-	if (!root)
+	if (!*root)
 		return (NULL);
-	tmp = root;
+	tmp = *root;
 	prev = NULL;
 	while (tmp)
 	{
 		if ((int)tmp->content_size == fd)
 		{
-			ret = (char *)tmp->content;
+			ret = ft_strdup((char *)tmp->content);
 			if (prev)
 				prev->next = tmp->next;
-			ft_lstdelone(&tmp, &ft_del);
+			if (tmp == *root)
+				ft_lstdelone(&(*root), &ft_del);
 			return (ret);
 		}
 		prev = tmp;
@@ -50,6 +52,8 @@ static t_list		*ft_lst_push(int fd, char *tail)
 	t_list			*tmp;
 	t_list			*prev;
 
+	//if (root && root->content == NULL)
+	//	root = NULL;
 	if (!root && tail && tail[0] != 0)
 	{
 		root = ft_lstnew(tail, ft_strlen(tail));
@@ -103,7 +107,7 @@ int		ft_str_split_end(t_list **list, char **line, int get_buff, int fd)
 	res = 0;
 	if (!(*list = ft_lst_push(fd, *line)))
 		return (0);
-	tail = ft_lst_pop(*list, fd);
+	tail = ft_lst_pop(&(*list), fd);
 	l = ft_strlen(tail);
 	if ((chr = ft_strchr(tail, '\n')) || (l > 0 && get_buff < BUFF_SIZE))
 	{
