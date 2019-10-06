@@ -12,11 +12,17 @@
 
 #include "get_next_line.h"
 
-t_list		*ft_lst_search(t_list *list, int fd)
+static t_list		*ft_lst_search(int fd, char **tail)
 {
-	t_list	*tmp;
+	static t_list	*root;
+	t_list			*tmp;
 
-	tmp = list;
+	if (!root)
+	{
+		root = ft_lstnew(*tail, ft_strlen(*tail));
+		root->content_size = fd;
+	}
+	tmp = root;
 	while (tmp)
 	{
 		if ((int)tmp->content_size == fd)
@@ -48,12 +54,15 @@ int		ft_str_realloc(char **str, int new_len)
 	return (res);
 }
 
-int		ft_str_split_end(char **tail, char **line, int get_buff, int res)
+int		ft_str_split_end(char **tail, char **line, int get_buff, int fd)
 {
 	int		seek;
 	int		l;
 	char	*chr;
+	int		res;
+	static t_list	*root;
 
+	res = 0;
 	if (!(*tail))
 		return (0);
 	l = ft_strlen(*tail);
@@ -106,23 +115,22 @@ int		get_next_line(const int fd, char **line)
 	char		*tmp;
 
 	ret = 0;
-	tmp = NULL;
 	if (fd < 0 || line == NULL || BUFF_SIZE <= 0 || read(fd, NULL, 0) == -1)
 		return (-1);
-	if ((ret = ft_str_split_end(&tail, &(*line), BUFF_SIZE, 0)))
+	if ((ret = ft_str_split_end(&tail, &(*line), BUFF_SIZE, fd)))
 		return (ret);
-	if (tail)
-		if (!(tmp = ft_strdup(tail)))
-			return (-1);
-	ft_memdel((void **)&tail);
 	ret = ft_get_buff(fd, &buff_ret);
-	if (tmp == NULL && buff_ret)
-		tail = ft_strdup(buff_ret);
-	else if (buff_ret)
+	if (buff_ret)
+	{
+		if (!tail)
+			tail = ft_strdup("");
+		tmp = ft_strdup(tail);
+		ft_memdel((void **)&tail);
 		tail = ft_strjoin(tmp, buff_ret);
-	ft_memdel((void **)&tmp);
+		ft_memdel((void **)&tmp);
+	}
 	if (ret != -1)
-		ret = ft_str_split_end(&tail, &(*line), ret, 0);
+		ret = ft_str_split_end(&tail, &(*line), ret, fd);
 	ft_memdel((void **)&buff_ret);
 	return (ret);
 }
