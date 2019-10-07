@@ -13,12 +13,11 @@
 #include <zlib.h>
 #include "get_next_line.h"
 
-
 static char		*ft_lst_pop(t_list **root, int fd)
 {
 	t_list	*tmp;
 	t_list	*prev;
-	char 	*ret;
+	char	*ret;
 
 	if (!*root)
 		return (NULL);
@@ -45,11 +44,10 @@ static char		*ft_lst_pop(t_list **root, int fd)
 static int	ft_lst_push(t_list **root, int fd, char *tail)
 {
 	t_list			*tmp;
-	t_list			*prev;
 
 	if (!*root)
 	{
-		*root = ft_lstnew(tail, ft_strlen(tail));
+		*root = ft_lstnew(tail, ft_strlen(tail) + 1);
 		(*root)->content_size = fd;
 	}
 	else
@@ -57,18 +55,18 @@ static int	ft_lst_push(t_list **root, int fd, char *tail)
 		tmp = *root;
 		while (tmp->next)
 			tmp = tmp->next;
-		tmp->next = ft_lstnew(tail, ft_strlen(tail));
+		tmp->next = ft_lstnew(tail, ft_strlen(tail) + 1);
 		(tmp)->content_size = fd;
 	}
 	return (1);
 }
 
-int		ft_get_buff(int fd, char **line, char **tail)
+int			ft_get_buff(int fd, char **line, char **tail)
 {
 	ssize_t	buff_bytes;
 	char	*buff_pos;
-	char 	*tmp;
-	char 	buff[BUFF_SIZE + 1];
+	char	*tmp;
+	char	buff[BUFF_SIZE + 1];
 
 	buff_pos = NULL;
 	while ((buff_bytes = read(fd, buff, BUFF_SIZE)) > 0)
@@ -90,11 +88,11 @@ int		ft_get_buff(int fd, char **line, char **tail)
 	return (0);
 }
 
-int		get_next_line(const int fd, char **line)
+int			get_next_line(const int fd, char **line)
 {
 	char			*tail;
 	int				ret;
-	static t_list	*root;
+	static t_list	*root = NULL;
 	char			*buff_pos;
 
 	ret = 0;
@@ -112,7 +110,7 @@ int		get_next_line(const int fd, char **line)
 	}
 	else
 		ret = ft_get_buff(fd, &(*line), &tail);
-	if (tail)
+	if (tail && tail[0] != '\0')
 		ft_lst_push(&root, fd, tail);
 	ft_memdel((void **)&tail);
 	return (ret);
