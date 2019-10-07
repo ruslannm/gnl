@@ -10,14 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <zlib.h>
 #include "get_next_line.h"
 
-static void	ft_del(void *content, size_t len)
-{
-	len = 0;
-	content = NULL;
-	free(content);
-}
 
 static char		*ft_lst_pop(t_list **root, int fd)
 {
@@ -37,7 +32,7 @@ static char		*ft_lst_pop(t_list **root, int fd)
 			if (prev)
 				prev->next = tmp->next;
 			ret = ft_strdup((char *)(*root)->content);
-			free((*root)->content;
+			free((*root)->content);
 			free(*root);
 			*root = NULL;
 			return (ret);
@@ -73,104 +68,54 @@ static int	ft_lst_push(t_list **root, int fd, char *tail)
 	return (1);
 }
 
-int		ft_str_realloc(char **str, int new_len)
-{
-	char	*tmp;
-	int		res;
-	char	*p;
 
-	p = *str;
-	tmp = ft_strdup(*str);
-	if (!(*str = (char *)ft_memalloc(sizeof(char) * (new_len + 1))))
-		res = -1;
-	else
-	{
-		*str = p;
-		*str = ft_strcpy(*str, tmp);
-		res = 1;
-	}
-	ft_memdel((void **)&tmp);
-	return (res);
-}
-
-int		ft_str_split_end(t_list **list, char **line, int get_buff, int fd)
-{
-	int		seek;
-	int		l;
-	char	*chr;
-	char	*tail;
-	int		res;
-
-	res = 0;
-	if (!(*list = ft_lst_push(fd, *line)))
-		return (0);
-	tail = ft_lst_pop(&(*list), fd);
-	l = ft_strlen(tail);
-	if ((chr = ft_strchr(tail, '\n')) || (l > 0 && get_buff < BUFF_SIZE))
-	{
-		res = 1;
-		seek = (chr != NULL ? chr - tail : l);
-		if (!(*line = ft_strsub(tail, 0, seek)))
-			res = -1;
-		if (*line && (l - seek) > 1)
-			*list = ft_lst_push(fd, chr + 1);
-	}
-	return (res);
-}
-
-int		ft_get_buff(int fd, char **buff)
+int		ft_get_buff(int fd, char **line, char **tail)
 {
 	ssize_t	buff_bytes;
-	int		buff_pos;
+	char		*buff_pos;
 	int		res;
+	char *tmp;
+	char buff[BUFF_SIZE + 1];
 
-	if (!(*buff = (char *)malloc(BUFF_SIZE + 1)))
-		return (-1);
 	buff_pos = 0;
-	while ((buff_bytes = read(fd, *buff + buff_pos, BUFF_SIZE)) > 0)
+	while ((buff_bytes = read(fd, buff, BUFF_SIZE)) > 0)
 	{
-		buff_pos += buff_bytes;
-		if (ft_memchr(*buff, '\n', buff_pos) || buff_bytes < BUFF_SIZE)
-			break ;
-		if ((res = ft_str_realloc(&(*buff), buff_pos + 1)) == -1)
-			break ;
+		buff[buff_bytes] = '\0';
+		tmp = ft_strjoin(*line, buff);
+		if ((buff_pos = ft_strchr(tmp, '\n')))
+			break;
+		free(*line);
+		*line = ft_strdup(tmp);
+		free(tmp);
 	}
-	if (res == -1)
-		ft_memdel((void **)&(*buff));
-	else
+	if (buff_pos > 0)
 	{
-		(*buff)[buff_pos] = '\0';
-		res = (int)(buff_bytes);
+		*tail = ft_strdup(buff_pos + 1);
+		free(*line);
+		*buff_pos = '\0';
+		*line = ft_strdup(tmp);
+		free(tmp);
+		return (1);
 	}
-	return (res);
+	else if (ft_strlen(*line) > 0)
+		return (1);
+	return (0);
 }
 
 int		get_next_line(const int fd, char **line)
 {
-	char	*buff_ret;
-	//char	*tail;
-	t_list	*list;
-	int		ret;
-	char	*tmp;
+	char			*tail;
+	int				ret;
+	static t_list	*root;
 
 	ret = 0;
 	if (fd < 0 || line == NULL || BUFF_SIZE <= 0 || read(fd, NULL, 0) == -1)
 		return (-1);
-	if ((ret = ft_str_split_end(&list, &(*line), BUFF_SIZE, fd)))
-		return (ret);
-	ret = ft_get_buff(fd, &buff_ret);
-	if (buff_ret)
-	{
-		if (!list)
-			tmp = ft_strnew(0);
-		else
-			tmp = ft_strdup(list->content);
-		*line = ft_strjoin(tmp, buff_ret);
-		ft_memdel((void **)&tmp);
-	}
-	if (ret != -1)
-		ret = ft_str_split_end(&list, &(*line), ret, fd);
-	//ft_memdel((void **)&tail);
-	ft_memdel((void **)&buff_ret);
+	if (!(*line = ft_lst_pop(&root, fd)))
+		*line = ft_strnew(1);
+	ret = ft_get_buff(fd, &(*line), &tail);
+	if (tail)
+		ft_lst_push(&root, fd, tail);
+	ft_memdel((void **)&tail);
 	return (ret);
 }
