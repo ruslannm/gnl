@@ -36,8 +36,10 @@ static char		*ft_lst_pop(t_list **root, int fd)
 			ret = ft_strdup((char *)tmp->content);
 			if (prev)
 				prev->next = tmp->next;
-			if (tmp == *root)
-				ft_lstdelone(&(*root), &ft_del);
+			ret = ft_strdup((char *)(*root)->content);
+			free((*root)->content;
+			free(*root);
+			*root = NULL;
 			return (ret);
 		}
 		prev = tmp;
@@ -46,34 +48,29 @@ static char		*ft_lst_pop(t_list **root, int fd)
 	return (NULL);
 }
 
-static t_list		*ft_lst_push(int fd, char *tail)
+static int	ft_lst_push(t_list **root, int fd, char *tail)
 {
-	static t_list	*root;
+	//static t_list	*root;
 	t_list			*tmp;
 	t_list			*prev;
 
-	//if (root && root->content == NULL)
-	//	root = NULL;
-	if (!root && tail && tail[0] != 0)
+	if (!*root && tail && tail[0] != 0)
 	{
-		root = ft_lstnew(tail, ft_strlen(tail));
-		root->content_size = fd;
+		*root = ft_lstnew(tail, ft_strlen(tail));
+		(*root)->content_size = fd;
 	}
-	else if (!root)
-		return (NULL);
 	else
 	{
-		tmp = root;
+		tmp = *root;
 		while (tmp->next)
-		{
-			if (tmp->content_size == fd)
-				return (root);
 			tmp = tmp->next;
-		}
 		if (tail && tail[0] != '\0')
+		{
 			tmp->next = ft_lstnew(tail, ft_strlen(tail));
+			(tmp)->content_size = fd;
+		}
 	}
-	return (root);
+	return (1);
 }
 
 int		ft_str_realloc(char **str, int new_len)
