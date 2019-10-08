@@ -12,33 +12,33 @@
 
 #include "get_next_line.h"
 
-static char		*ft_lst_pop(t_list **root, int fd)
+static int		ft_lst_pop(t_list **root, char **line, int fd, int ret)
 {
 	t_list	*tmp;
 	t_list	*prev;
-	char	*ret;
 
-	if (!*root)
-		return (NULL);
 	tmp = *root;
 	prev = NULL;
 	while (tmp)
 	{
 		if ((int)tmp->content_size == fd)
 		{
-			ret = ft_strdup((char *)tmp->content);
+			if (!(*line = ft_strdup((char *)tmp->content)))
+				ret = -1;
 			if (prev)
 				prev->next = tmp->next;
 			else
 				*root = tmp->next;
 			free(tmp->content);
 			free(tmp);
-			return (ret);
+			return(ret) ;
 		}
 		prev = tmp;
 		tmp = tmp->next;
 	}
-	return (NULL);
+	if (!(*line = ft_strnew(1)))
+		ret = -1;
+	return (ret);
 }
 
 static int	ft_lst_push(t_list **root, int fd, char *tail)
@@ -47,7 +47,8 @@ static int	ft_lst_push(t_list **root, int fd, char *tail)
 
 	if (!*root)
 	{
-		*root = ft_lstnew(tail, ft_strlen(tail) + 1);
+		if (!(*root = ft_lstnew(tail, ft_strlen(tail) + 1)))
+			return (-1);
 		(*root)->content_size = fd;
 	}
 	else
@@ -55,7 +56,8 @@ static int	ft_lst_push(t_list **root, int fd, char *tail)
 		tmp = *root;
 		while (tmp->next)
 			tmp = tmp->next;
-		tmp->next = ft_lstnew(tail, ft_strlen(tail) + 1);
+		if (!(tmp->next = ft_lstnew(tail, ft_strlen(tail) + 1)))
+			return (-1);
 		tmp->next->content_size = fd;
 	}
 	return (1);
@@ -74,7 +76,7 @@ int			ft_get_buff(int fd, char **line, char **tail)
 	{
 		buff[buff_bytes] = '\0';
 		if (!(tmp = ft_strjoin(*line, buff)))
-			return(-1);
+			return (-1);
 		free(*line);
 		*line = tmp;
 		if ((buff_pos = ft_strchr(*line, '\n')))
@@ -101,9 +103,8 @@ int			get_next_line(const int fd, char **line)
 	ret = 1;
 	if (fd < 0 || line == NULL || BUFF_SIZE <= 0 || read(fd, NULL, 0) == -1)
 		return (-1);
-	if (!(*line = ft_lst_pop(&root, fd)))
-		if (!(*line = ft_strnew(1)))
-			ret = -1;
+	if (ft_lst_pop(&root, &(*line), fd, 1) == -1)
+		return (-1);
 	if ((buff_pos = ft_strchr(*line, '\n')))
 	{
 		if (!(tail = ft_strdup(buff_pos + 1)))
@@ -113,7 +114,7 @@ int			get_next_line(const int fd, char **line)
 	else
 		ret = ft_get_buff(fd, &(*line), &tail);
 	if (tail && tail[0] != '\0')
-		ft_lst_push(&root, fd, tail);
+		ret = ft_lst_push(&root, fd, tail);
 	ft_memdel((void **)&tail);
 	return (ret);
 }
