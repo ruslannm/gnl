@@ -29,9 +29,10 @@ static char		*ft_lst_pop(t_list **root, int fd)
 			ret = ft_strdup((char *)tmp->content);
 			if (prev)
 				prev->next = tmp->next;
-			free((*root)->content);
-			free(*root);
-			*root = tmp->next;
+			else
+				*root = tmp->next;
+			free(tmp->content);
+			free(tmp);
 			return (ret);
 		}
 		prev = tmp;
