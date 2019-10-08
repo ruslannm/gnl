@@ -68,23 +68,26 @@ int			ft_get_buff(int fd, char **line, char **tail)
 	char	*tmp;
 	char	buff[BUFF_SIZE + 1];
 
+	if (!(*line))
+		return (-1);
 	while ((buff_bytes = read(fd, buff, BUFF_SIZE)) > 0)
 	{
 		buff[buff_bytes] = '\0';
-		tmp = ft_strjoin(*line, buff);
+		if (!(tmp = ft_strjoin(*line, buff)))
+			return(-1);
 		free(*line);
-		*line = ft_strdup(tmp);
-		free(tmp);
+		*line = tmp;
 		if ((buff_pos = ft_strchr(*line, '\n')))
 		{
-			*tail = ft_strdup(buff_pos + 1);
+			if (!(*tail = ft_strdup(buff_pos + 1)))
+				return (-1);
 			*buff_pos = '\0';
 			return (1);
 		}
 	}
 	if (ft_strlen(*line) > 0)
 		return (1);
-	return (0);
+	return (buff_bytes < 0 ? -1 : 0);
 }
 
 int			get_next_line(const int fd, char **line)
@@ -95,15 +98,17 @@ int			get_next_line(const int fd, char **line)
 	char			*buff_pos;
 
 	tail = NULL;
+	ret = 1;
 	if (fd < 0 || line == NULL || BUFF_SIZE <= 0 || read(fd, NULL, 0) == -1)
 		return (-1);
 	if (!(*line = ft_lst_pop(&root, fd)))
-		*line = ft_strnew(1);
+		if (!(*line = ft_strnew(1)))
+			ret = -1;
 	if ((buff_pos = ft_strchr(*line, '\n')))
 	{
-		tail = ft_strdup(buff_pos + 1);
+		if (!(tail = ft_strdup(buff_pos + 1)))
+			ret = -1;
 		*buff_pos = '\0';
-		ret = 1;
 	}
 	else
 		ret = ft_get_buff(fd, &(*line), &tail);
