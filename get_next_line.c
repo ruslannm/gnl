@@ -10,7 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <zlib.h>
 #include "get_next_line.h"
 
 static char		*ft_lst_pop(t_list **root, int fd)
@@ -32,7 +31,7 @@ static char		*ft_lst_pop(t_list **root, int fd)
 				prev->next = tmp->next;
 			free((*root)->content);
 			free(*root);
-			*root = NULL;
+			*root = tmp->next;
 			return (ret);
 		}
 		prev = tmp;
@@ -56,7 +55,7 @@ static int	ft_lst_push(t_list **root, int fd, char *tail)
 		while (tmp->next)
 			tmp = tmp->next;
 		tmp->next = ft_lstnew(tail, ft_strlen(tail) + 1);
-		(tmp)->content_size = fd;
+		tmp->next->content_size = fd;
 	}
 	return (1);
 }
@@ -68,7 +67,6 @@ int			ft_get_buff(int fd, char **line, char **tail)
 	char	*tmp;
 	char	buff[BUFF_SIZE + 1];
 
-	buff_pos = NULL;
 	while ((buff_bytes = read(fd, buff, BUFF_SIZE)) > 0)
 	{
 		buff[buff_bytes] = '\0';
@@ -95,9 +93,7 @@ int			get_next_line(const int fd, char **line)
 	static t_list	*root = NULL;
 	char			*buff_pos;
 
-	ret = 0;
 	tail = NULL;
-	buff_pos = NULL;
 	if (fd < 0 || line == NULL || BUFF_SIZE <= 0 || read(fd, NULL, 0) == -1)
 		return (-1);
 	if (!(*line = ft_lst_pop(&root, fd)))
