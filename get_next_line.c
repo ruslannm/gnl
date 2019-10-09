@@ -103,6 +103,7 @@ int			get_next_line(const int fd, char **line)
 	char			*buff_pos;
 	char			*buff;
 
+	tail = NULL;
 	if (fd < 0 || line == NULL || BUFF_SIZE <= 0 || read(fd, NULL, 0) == -1)
 		return (-1);
 	if (!(buff = (char*)malloc(BUFF_SIZE + 1)))
@@ -110,7 +111,7 @@ int			get_next_line(const int fd, char **line)
 	if (ft_lst_pop(&root, &(*line), fd, 1) == -1)
 		return (-1);
 	if ((buff_pos = ft_strchr(*line, '\n')))
-		return (ft_split_line(&tail, &buff_pos));
+		ret = ft_split_line(&tail, &buff_pos);
 	else
 		ret = ft_get_buff(fd, &(*line), &tail, &buff);
 	if (tail && tail[0] != '\0')
