@@ -12,7 +12,7 @@
 
 #include "get_next_line.h"
 
-static int		ft_lst_pop(t_list **root, char **line, int fd, int ret)
+static int	ft_lst_pop(t_list **root, char **line, int fd, int ret)
 {
 	t_list	*tmp;
 	t_list	*prev;
@@ -31,7 +31,7 @@ static int		ft_lst_pop(t_list **root, char **line, int fd, int ret)
 				*root = tmp->next;
 			free(tmp->content);
 			free(tmp);
-			return(ret) ;
+			return (ret);
 		}
 		prev = tmp;
 		tmp = tmp->next;
@@ -43,7 +43,7 @@ static int		ft_lst_pop(t_list **root, char **line, int fd, int ret)
 
 static int	ft_lst_push(t_list **root, int fd, char *tail)
 {
-	t_list			*tmp;
+	t_list	*tmp;
 
 	if (!*root)
 	{
@@ -63,29 +63,32 @@ static int	ft_lst_push(t_list **root, int fd, char *tail)
 	return (1);
 }
 
-int			ft_get_buff(int fd, char **line, char **tail)
+static int	ft_split_line(char **tail, char **buff_pos)
+{
+	int ret;
+
+	ret = 1;
+	if (!(*tail = ft_strdup(*buff_pos + 1)))
+		ret = -1;
+	*buff_pos[0] = '\0';
+	return (ret);
+}
+
+static int	ft_get_buff(int fd, char **line, char **tail, char **buff)
 {
 	ssize_t	buff_bytes;
 	char	*buff_pos;
 	char	*tmp;
-	char	buff[BUFF_SIZE + 1];
 
-	if (!(*line))
-		return (-1);
-	while ((buff_bytes = read(fd, buff, BUFF_SIZE)) > 0)
+	while ((buff_bytes = read(fd, *buff, BUFF_SIZE)) > 0)
 	{
-		buff[buff_bytes] = '\0';
-		if (!(tmp = ft_strjoin(*line, buff)))
+		(*buff)[buff_bytes] = '\0';
+		if (!(tmp = ft_strjoin(*line, *buff)))
 			return (-1);
 		free(*line);
 		*line = tmp;
 		if ((buff_pos = ft_strchr(*line, '\n')))
-		{
-			if (!(*tail = ft_strdup(buff_pos + 1)))
-				return (-1);
-			*buff_pos = '\0';
-			return (1);
-		}
+			return (ft_split_line(&(*tail), &buff_pos));
 	}
 	if (ft_strlen(*line) > 0)
 		return (1);
@@ -98,23 +101,21 @@ int			get_next_line(const int fd, char **line)
 	int				ret;
 	static t_list	*root = NULL;
 	char			*buff_pos;
+	char			*buff;
 
-	tail = NULL;
-	ret = 1;
 	if (fd < 0 || line == NULL || BUFF_SIZE <= 0 || read(fd, NULL, 0) == -1)
+		return (-1);
+	if (!(buff = (char*)malloc(BUFF_SIZE + 1)))
 		return (-1);
 	if (ft_lst_pop(&root, &(*line), fd, 1) == -1)
 		return (-1);
 	if ((buff_pos = ft_strchr(*line, '\n')))
-	{
-		if (!(tail = ft_strdup(buff_pos + 1)))
-			ret = -1;
-		*buff_pos = '\0';
-	}
+		return (ft_split_line(&tail, &buff_pos));
 	else
-		ret = ft_get_buff(fd, &(*line), &tail);
+		ret = ft_get_buff(fd, &(*line), &tail, &buff);
 	if (tail && tail[0] != '\0')
 		ret = ft_lst_push(&root, fd, tail);
+	ft_memdel((void **)&buff);
 	ft_memdel((void **)&tail);
 	return (ret);
 }
